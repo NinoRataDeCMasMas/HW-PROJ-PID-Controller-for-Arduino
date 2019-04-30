@@ -5,6 +5,9 @@
  */
 #include <ComplementaryFilter.h>
 #include <Controller.h>
+#include <PIDController.h>
+#include <PIController.h>
+#include <PDController.h>
 #include <Servo.h>
 #include "Printer.h"
 
@@ -14,6 +17,8 @@ Controller* controller;
 ComplementaryFilter* filter;
 
 /* Define Variables we'll be connecting to */
+const int servoZeroPos = 98;
+const double sensorZeroPos = 290.0;
 double setpoint = 0.0, input = 0.0, output = 0.0;
 /*
  * @brief setup function.
@@ -26,7 +31,7 @@ void setup( void )
   servoMotor = new Servo;
   servoMotor->attach(9);  
   /* We start the proportional controller */
-  controller = new Controller(&setpoint, &input, &output, 1);  
+  controller = new PIDController(&setpoint, &input, &output, 0.3464, 0.4849, 0.001);  
   /* Serial communication to 9600 bauds */
   Serial.begin(9600);  
 }
@@ -36,10 +41,10 @@ void setup( void )
 void loop( void )
 {
   double acdLecture = analogRead(A0);
-  input = filter->compute(acdLecture) - 285.0;
+  input = filter->compute(acdLecture) - sensorZeroPos;
   controller->compute();
   Serial << input << "," << output << endl;
-  servoMotor->write(output + 93);
+  servoMotor->write(output + servoZeroPos);
   delay(25);  
 }
 /* EOF */
